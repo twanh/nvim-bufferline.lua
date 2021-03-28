@@ -15,7 +15,8 @@ local function render(tab, is_active, style, highlights)
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
-  local name = padding .. padding .. tab.tabnr .. padding
+  -- local name = padding .. padding .. tab.tabnr .. padding
+  local name = tab.tabnr .. padding
   local length = strwidth(name) + strwidth(separator_component)
   return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
 end
