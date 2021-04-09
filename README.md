@@ -34,6 +34,14 @@ see: `:h bufferline-styling`
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
+mode `both` with default number_style
+
+![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
+
+mode `both` with customized number_style `{"superscript", "subscript"}`
+
+![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
+
 #### Buffer pick functionality
 
 ![bufferline pick](https://user-images.githubusercontent.com/22454918/111993296-5bbf5180-8b0e-11eb-9ad9-fcf9619436fd.gif)
@@ -131,8 +139,8 @@ not track global variables which is the mechanism used to store your sort order.
 require'bufferline'.setup{
   options = {
     view = "multiwindow" | "default",
-    numbers = "none" | "ordinal" | "buffer_id",
-    number_style = "superscript" | "",
+    numbers = "none" | "ordinal" | "buffer_id" | "both",
+    number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     mappings = true | false,
     buffer_close_icon= '',
     modified_icon = '●',
@@ -143,7 +151,7 @@ require'bufferline'.setup{
     max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
     diagnostics = false | "nvim_lsp"
-    diagnostics_indicator = function(count, level)
+    diagnostics_indicator = function(count, level, diagnostics_dict)
       return "("..count..")"
     end
     -- NOTE: this will be called a lot so don't do any heavy processing here
@@ -199,17 +207,32 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 
 --- count is an integer representing total count of errors
 --- level is a string "error" | "warning"
+--- diagnostics_dict is a dictionary from error level ("error", "warning" or "info")to number of errors for each level.
 --- this should return a string
 --- Don't get too fancy as this function will be executed a lot
-diagnostics_indicator = function(count, level)
-  local icon = level:match("error") and " " or ""
+diagnostics_indicator = function(count, level, diagnostics_dict)
+  local icon = level:match("error") and " " or " "
   return " " .. icon .. count
+end
+
+```
+
+![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+
+```lua
+
+diagnostics_indicator = function(_, _, diagnostics_dict)
+  local s = " "
+  for e, n in pairs(diagnostics_dict) do
+    local sym = e == "error" and " "
+      or (e == "warning" and " " or "" )
+    s = s .. n .. sym
+  end
+  return s
 end
 ```
 
-#### Example custom indicator
-
-![custom indicator](./screenshots/custom_lsp_indicator.png)
+![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
 
 The highlighting for the filename if there is an error can be changed by replacing the highlights for
 `error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.

@@ -49,8 +49,8 @@ The available settings are: >
     require"bufferline".setup{
         options = {
             view = "multiwindow" | "default",
-            numbers = "none" | "ordinal" | "buffer_id",
-            number_style = "superscript" | "",
+            numbers = "none" | "ordinal" | "buffer_id" | "both",
+            number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
             mappings = true | false,
             buffer_close_icon= "",
             modified_icon = "●",
@@ -132,6 +132,9 @@ length specified (+ the other indicators). If you set
 `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
+NOTE: when this option is set to `true`. It will disable the ability to
+deduplicate buffers.
+
 ==============================================================================
 SORTING					               *bufferline-lua-sorting*
 
@@ -168,7 +171,7 @@ Bufferline can be configured to take a custom filtering function via the
 `custom_filter` option. This value must be a lua function that will receive
 each buffer number that is going to be used for the bufferline, as well as all the others.
 A user can then check whatever they would like and return `true` if they would like it to
-appear and `false` if not. 
+appear and `false` if not.
 For example: >
     custom_filter = function(buf, buf_nums)
         -- dont show help buffers in the bufferline
@@ -204,7 +207,7 @@ For example: >
         if vim.tbl_isempty(logs) then
             return true
         end
-        -- 2. if there are log buffers then only show the log buffer 
+        -- 2. if there are log buffers then only show the log buffer
         local tab_num = vim.fn.tabpagenr()
         local is_log = vim.bo[buf].filetype == "log"
         -- only show log buffers in secondary tabs
@@ -326,41 +329,108 @@ highlight command. See `:h highlight` .
                 guibg = '<color-value-here>',
                 gui = "bold,italic"
             },
+            diagnostic = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+            },
+            diagnostic_visible = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+            },
+            diagnostic_selected = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic"
+            },
+            info = {
+                guifg = <color-value-here>,
+                guisp = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            info_visible = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            info_selected = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = <color-value-here>
+            },
+            info_diagnostic = {
+                guifg = <color-value-here>,
+                guisp = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            info_diagnostic_visible = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            info_diagnostic_selected = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = <color-value-here>
+            },
             warning = {
-                guifg = '<color-value-here>',
-                gui = "underline",
-                guisp = warning_fg,
-                guibg = '<color-value-here>'
+                guifg = <color-value-here>,
+                guisp = <color-value-here>,
+                guibg = <color-value-here>
             },
             warning_visible = {
-                guifg = '<color-value-here>',
-                guibg = '<color-value-here>',
-                gui = "underline",
-                guisp = warning_fg
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
             },
             warning_selected = {
-                guifg = warning_fg,
-                guibg = '<color-value-here>',
-                gui = "bold,italic,underline",
-                guisp = warning_fg
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = <color-value-here>
+            },
+            warning_diagnostic = {
+                guifg = <color-value-here>,
+                guisp = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            warning_diagnostic_visible = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            warning_diagnostic_selected = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = warning_diagnostic_fg
             },
             error = {
-                guifg = '<color-value-here>',
-                guibg = '<color-value-here>',
-                gui = "underline",
-                guisp = '<color-value-here>'
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                guisp = <color-value-here>
             },
             error_visible = {
-                guifg = '<color-value-here>',
-                guibg = '<color-value-here>',
-                gui = "underline",
-                guisp = '<color-value-here>'
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
             },
             error_selected = {
-                guifg = '<color-value-here>',
-                guibg = '<color-value-here>',
-                gui = "bold,italic,underline",
-                guisp = '<color-value-here>'
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = <color-value-here>
+            },
+            error_diagnostic = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                guisp = <color-value-here>
+            },
+            error_diagnostic_visible = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>
+            },
+            error_diagnostic_selected = {
+                guifg = <color-value-here>,
+                guibg = <color-value-here>,
+                gui = "bold,italic",
+                guisp = <color-value-here>
             },
             modified = {
                 guifg = '<color-value-here>',

@@ -1,8 +1,8 @@
 local M = {}
 
 function M.to_rgb(color)
-  local r = tonumber(string.sub(color, 2,3), 16)
-  local g = tonumber(string.sub(color, 4,5), 16)
+  local r = tonumber(string.sub(color, 2, 3), 16)
+  local g = tonumber(string.sub(color, 4, 5), 16)
   local b = tonumber(string.sub(color, 6), 16)
   return r, g, b
 end
@@ -12,7 +12,9 @@ function M.shade_color(color, percent)
   local r, g, b = M.to_rgb(color)
 
   -- If any of the colors are missing return "NONE" i.e. no highlight
-  if not r or not g or not b then return "NONE" end
+  if not r or not g or not b then
+    return "NONE"
+  end
 
   r = math.floor(tonumber(r * (100 + percent) / 100))
   g = math.floor(tonumber(g * (100 + percent) / 100))
@@ -32,7 +34,7 @@ function M.shade_color(color, percent)
   local gg = string.len(g) == 1 and "0" .. g or g
   local bb = string.len(b) == 1 and "0" .. b or b
 
-  return "#"..rr..gg..bb
+  return "#" .. rr .. gg .. bb
 end
 
 --- Determine whether to use black or white text
@@ -45,9 +47,11 @@ function M.color_is_bright(hex)
   end
   local r, g, b = M.to_rgb(hex)
   -- If any of the colors are missing return false
-  if not r or not g or not b then return false end
+  if not r or not g or not b then
+    return false
+  end
   -- Counting the perceptive luminance - human eye favors green color
-  local luminance = (0.299*r + 0.587*g + 0.114*b)/255
+  local luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   if luminance > 0.5 then
     return true -- Bright colors, black font
   else
@@ -55,12 +59,40 @@ function M.color_is_bright(hex)
   end
 end
 
+-- parses the hex color code from the given hl_name
+-- if unable to parse, uses the fallback value
+---@param hl_name string
+---@param part string
+---@param fallback table
+---@return string
 function M.get_hex(hl_name, part, fallback)
-  if not fallback then fallback = "none" end
-  local id = vim.fn.hlID(hl_name)
-  local color = vim.fn.synIDattr(id, part)
-  -- if we can't find the color we default to none
-  if not color or color == "" then return fallback else return color end
+  -- translate from internal part to hl part
+  assert(part == "fg" or part == "bg", 'Color part should be one of "fg" or "bg"')
+  part = part == "fg" and "foreground" or "background"
+
+  -- try and get hl from name
+  local success, hl = pcall(vim.api.nvim_get_hl_by_name, hl_name, true)
+  if success and hl and hl[part] then
+    -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
+    return string.format("#%06x", hl[part])
+  end
+
+  -- basic fallback
+  if fallback and type(fallback) == "string" then
+    return fallback
+  end
+
+  -- bit of recursive fallback logic
+  if fallback and type(fallback) == "table" then
+    assert(
+      fallback.name and fallback.attribute,
+      'Fallback should have "name" and "attribute" fields'
+    )
+    return M.get_hex(fallback.name, fallback.attribute, fallback.fallback) -- allow chaining
+  end
+
+  -- we couldn't resolve the color
+  return "NONE"
 end
 
 return M
